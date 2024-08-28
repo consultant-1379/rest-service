@@ -1,0 +1,8 @@
+name: "resource_configuration_1"
+description: "invalid schema - no resource defined"
+globalRequestHeaders:
+  content-type: ["application/json"]
+resources:
+  datasync:
+    path: ~
+    methods: ~

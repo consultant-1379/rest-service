@@ -1,0 +1,43 @@
+{
+  "id": 47,
+  "apiKey": "f91537e8-d2c3-4413-a2bb-0f6330859a39",
+  "name": "wiremock_target_underscore",
+  "subsystemType": {
+    "id": 20,
+    "type": "REST",
+    "alias": "Rest"
+  },
+  "url": "http://eric-bos-dr-stub:8080",
+  "connectionProperties": [
+    {
+      "id": 48,
+      "subsystemId": 47,
+      "username": "mandatory_not_used",
+      "password": "mandatory_not_used",
+      "ssl_verify": "true",
+      "ssl_trustStoreSecretName": "trustStoreName",
+      "ssl_trustStoreSecretPassword": "trustStorePwd",
+      "ssl_keyStoreSecretName": "keyStoreName",
+      "ssl_keyStoreSecretPassword": "keyStorePwd",
+      "auth_username": "user",
+      "auth_password": "pwd",
+      "auth_type": "Bearer",
+      "auth_url": "/token?username=user1&password=password123&grant_type=password&client_id=eo&client_secret=secret123",
+      "auth_headers": "{\"content-type\":[\"application/x-www-form-urlencoded\"],\"accept\":[\"*/*\"]}",
+      "auth_method": "POST",
+      "auth_body": "username=user1&password=password123&grant_type=password&client_id=eo&client_secret=secret123",
+      "auth_expireSeconds": "300",
+      "auth_key": "target_token",
+      "auth_subsystemName": "",
+      "auth_tokenRef": ".access_token",
+      "client_connectTimeoutSeconds": "10",
+      "client_readTimeoutSeconds": "60",
+      "client_writeTimeoutSeconds": "60",
+      "encryptedKeys": [
+        "password"
+      ],
+      "subsystemUsers": []
+    }
+  ],
+  "vendor": "mandatory_not_used"
+}

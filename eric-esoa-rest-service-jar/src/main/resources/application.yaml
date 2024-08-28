@@ -1,0 +1,156 @@
+#
+# COPYRIGHT Ericsson 2023
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+service:
+  connected-system:
+    url: ${CONNECTED_SYSTEM_URL:http://localhost:8081}
+    subsystems-path: /subsystem-manager/v1/subsystems
+    cache:
+      accessExpiry: ${CONNECTED_SYSTEM_CACHE_ACCESS_EXPIRY:30}
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration
+  cloud:
+    kubernetes:
+      config:
+        enabled: ${SPRING_CLOUD_KUBERNETES_ENABLED:true}
+      reload:
+        enabled: true
+        strategy: refresh
+        monitoring-secrets: true
+        monitoring-config-maps: false
+  lifecycle:
+    timeout-per-shutdown-phase: ${GRACEFUL_SHUTDOWN_TIMEOUT:30s}
+  datasource:
+    url: jdbc:${DB_VENDOR:postgresql}:${JDBC_URL://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:rsdb}?currentSchema=${SCHEMA_NAME:rest_service}${SSL_PARAMETERS:}}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+    hikari:
+      data-source-properties: stringtype=unspecified
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      max-lifetime: ${DB_CONNECTION_MAX_LIFETIME:840000}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:9000}
+  flyway:
+    locations: ${MIGRATION_PATH:classpath:flyway/schemas}
+    baselineOnMigrate: true
+    url: jdbc:postgresql:${JDBC_URL://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:rsdb}?currentSchema=${SCHEMA_NAME:rest_service}${SSL_PARAMETERS:}}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  codec:
+    # commented out until https://eteamproject.internal.ericsson.com/browse/ESOA-12900 is done
+    # max-in-memory-size: ${WEB_CLIENT_IN_MEMORY_SIZE:100MB}
+    max-in-memory-size-kb: ${WEB_CLIENT_IN_MEMORY_SIZE_KB:100000}
+
+logging:
+  config: ${LOGBACK_CONFIG_FILE:classpath:logback-json.xml}
+  endpoints:
+    exclude: /actuator/health, /ping, /metric
+  level:
+    root: INFO
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    com.ericsson.bos.dr.rest.RestServiceApplication: DEBUG # Enables request logging
+
+certificates:
+  secrets:
+    - type: truststore
+      namePrefix: ${TRUSTSTORE_SECRET_NAME_PREFIX:eric-esoa-rest-service-truststore-secret}
+      dataFieldKey: ${TRUSTSTORE_SECRET_DATA_FIELD_KEY:server.p12}
+    - type: keystore
+      namePrefix: ${KEYSTORE_SECRET_NAME_PREFIX:eric-esoa-rest-service-keystore-secret}
+      dataFieldKey: ${KEYSTORE_SECRET_DATA_FIELD_KEY:client.p12}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers, metrics, prometheus
+      base-path: /actuator
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include:
+            - ping
+            - livenessState
+        readiness:
+          include:
+            - db
+            - readinessState
+      show-details: always
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    enable:
+      jvm: true
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+      sla:
+        http:
+          server:
+            requests: 100ms,300ms,500ms
+  tracing:
+    enabled: true
+
+security:
+  tls:
+    enabled: ${SECURITY_TLS_ENABLED:false}
+  keystore:
+    path: ${java.io.tmpdir}/keystore.jks
+    tlsCertDirectory: ${TLS_CERT_DIRECTORY:/var/run/secrets/eric-esoa-rest-service-server-cert/}
+    tlsCertFile: ${TLS_CERT_FILE:tls.crt}
+    tlsKeyFile: ${TLS_KEY_FILE:tls.key}
+  cryptoStoreParams:
+    storePass: "Y2hhbmdlaXQ="
+    keyPass: "Y2hhbmdlaXQ="
+    keyAlias: restService
+    keyStoreType: JKS
+  renewCertRetry:
+    delay: ${CERT_RENEW_RETRY_DELAY:10000}
+    times: ${CERT_RENEW_RETRY_COUNT:6}
+
+netty:
+  http-client:
+    connection-pool:
+      maxConnections: ${NETTY_POOL_MAX_CONNECTIONS:50}
+      maxIdleTime: ${NETTY_POOL_MAX_IDLE_TIME:60s}
+      maxLifeTime: ${NETTY_POOL_MAX_LIFE_TME:300s}
+      evictInterval: ${NETTY_POOL_EVICT_INTERVAL:120s}
+      disposeInterval: ${NETTY_POOL_DISPOSE_INTERVAL:300s}
+      poolInactivityTime: ${NETTY_POOL_INACTIVITY_TIME:300s}
+
+server:
+  shutdown: graceful
+  port: ${SERVER_PORT:8080}
+  ssl:
+    port: ${SERVER_SSL_PORT:8443}
+  max-http-header-size: ${SERVER_MAX_HTTP_HEADER_SIZE:15KB}

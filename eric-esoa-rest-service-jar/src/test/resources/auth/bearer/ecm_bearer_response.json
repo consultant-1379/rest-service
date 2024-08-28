@@ -1,0 +1,11 @@
+{
+  "status": {
+    "reqStatus": "SUCCESS",
+    "credentials": "aBcD1234.*eFgH5678TOKEN..*",
+    "msgs": [{
+      "msgCode": "ECMSE103",
+      "msgText": "User %A1% was authenticated successfully.",
+      "msgValues": ["ecmadmin"]
+    }]
+  }
+}

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:cai3g="http://schemas.ericsson.com/cai3g1.2/">
+    <S:Header>
+        <cai3g:SessionId>a8b65113904b4542a7531eb077e9233f</cai3g:SessionId>
+    </S:Header>
+    <S:Body>
+        <GetResponse xmlns="http://schemas.ericsson.com/cai3g1.2/">
+            <MOAttributes>
+                <cg:GetFlavorsListResponse xmlns:cg="http://schemas.ericsson.com/ma/CA/ecm/cg/">
+                    <cg:FlavorsList>
+                        <cg:flavors>
+                            <cg:assignedObjectId>018373c2-bba3-445b-8f64-036b3ca69ead</cg:assignedObjectId>
+                            <cg:flavorName>CM-Fortinetts_N72</cg:flavorName>
+                        </cg:flavors>
+                    </cg:FlavorsList>
+                </cg:GetFlavorsListResponse>
+            </MOAttributes>
+        </GetResponse>
+    </S:Body>
+</S:Envelope>

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 2,
+    "name": "YanfengSystem",
+    "subsystemType": {
+      "id": 1,
+      "type": "REST",
+      "category": "Primary"
+    },
+    "url": "http://localhost:80/yanfeng",
+    "connectionProperties": [
+      {
+        "username": "user",
+        "password": "123",
+        "ssl.verify": false,
+        "ssl.keyStore": "",
+        "ssl.keyStorePassword": "",
+        "ssl.trustStore": "",
+        "ssl.trustStorePasswor": "",
+        "auth.type": "Bearer",
+        "auth.url": " ecm_service/tokens",
+        "auth.method": "POST",
+        "auth.headers": "{\"content-type\":[\"application/json\"],\"accept\":[\"*/*\"]}",
+        "auth.body": "",
+        "auth.expireSeconds": "5",
+        "auth.key": "ecm_token",
+        "auth.tokenRef": ".status.credentials",
+        "client.connectTimeoutSeconds": "10",
+        "client.readTimeoutSeconds": "60",
+        "client.writeTimeoutSeconds": "60",
+        "encryptedKeys": [],
+        "subsystemUsers": []
+      }
+    ],
+    "vendor": "Yanfeng",
+    "subsystemTypeId": 1
+  }
+]

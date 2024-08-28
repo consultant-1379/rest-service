@@ -1,0 +1,60 @@
+name: EXTERNAL_SYSTEM
+globalRequestHeaders:
+  content-type: [application/xml]
+globalResponseHeaders:
+  content-type: [application/ld+json]
+globalRetryHandlers:
+  - retryCondition: "{{response.code == 500 && response.body == 'globalError1'}}"
+    retryPolicy:
+      backOffSeconds: 0.1
+      maxRetries: 1
+  - retryCondition: "{{response.code == 400 && response.body == 'error1'}}"  # overridden by local retry handler which should be used
+    retryPolicy:
+      backOffSeconds: 0.1
+      maxRetries: 5
+  - retryCondition: "{{connectionTimeout == true}}"  # overridden by local retry handler which should be used
+    retryPolicy:
+      backOffSeconds: 0.1
+      maxRetries: 5
+resources:
+  resource1:
+    path: '/resource1'
+    methods:
+      get:
+        inbound:
+          transformationInTemplate:  ~
+        outbound:
+          transformationOutTemplate: ~
+        retryHandlers:
+          - retryCondition: "{{response.code == 400 && response.body == 'error1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+          - retryCondition: "{{response.code == 500 && response.body == 'error1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+          - retryCondition: "{{response.code == 500 && response.body == 'error2'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 2
+          - retryCondition: "{{response.code == 500 and response.headers.header1 == '2'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 2
+          - retryCondition: "{{response.code == 500 and response.body == 'error1' and response.headers.header1 == '1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+          - retryCondition: "{{response.code == 500 and response.body.prop1 == 'error1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+          - retryCondition: "{{response.code == 500 and response.body[0].prop1 == 'error1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+          - retryCondition: "{{connectionTimeout == true}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1

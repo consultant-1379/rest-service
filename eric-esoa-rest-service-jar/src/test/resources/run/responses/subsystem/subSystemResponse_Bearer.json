@@ -1,0 +1,36 @@
+[
+  {
+    "id": 2,
+    "name": "SO",
+    "subsystemType": {
+      "id": 1,
+      "type": "REST",
+      "category": "Primary"
+    },
+    "url": "http://localhost:8081",
+    "connectionProperties": [
+      {
+        "username": "user",
+        "password": "123",
+        "ssl.verify": false,
+        "ssl.keyStoreSecretName": "",
+        "ssl.keyStoreSecretPassword": "",
+        "ssl.trustStoreSecretName": "",
+        "ssl.trustStoreSecretPassword": "",
+        "auth.type": "Bearer",
+        "auth.url": " ecm_service/tokens",
+        "auth.method": "POST",
+        "auth.headers": "{\"content-type\":[\"application/json\"],\"accept\":[\"*/*\"]}",
+        "auth.body": "",
+        "auth.expireSeconds": "5",
+        "auth.key": "ecm_token",
+        "auth.tokenRef": ".status.credentials",
+        "client.connectTimeoutSeconds": "10",
+        "client.readTimeoutSeconds": "60",
+        "client.writeTimeoutSeconds": "60"
+      }
+    ],
+    "vendor": "Ericsson",
+    "subsystemTypeId": 1
+  }
+]

@@ -1,0 +1,38 @@
+name: CTS
+description: test_resource_configuration
+globalRequestHeaders:
+  content-type: ["application/json"]
+  Authorization: ['webAuthenticationToken {{cts_token1}}']
+resources:
+  datasync:
+    path: '/oss-core-ws/rest/osl-adv/datasync/process'
+    methods:
+      post:
+        inbound:
+          headers:
+            content-type: ["application/json"]
+        outbound:
+          code: "200"
+          transformationOutTemplate: |
+            {
+              "status": "SUCCESS",
+              "info": "Object Processed"
+            }
+  getobject:
+    path: '/oss-core-ws/rest/{{inputs.object}}'
+    methods:
+      get:
+        inbound:
+          transformationInTemplate: ~
+        outbound:
+globalErrorHandlers:
+  - errorCondition: "{{response.code >= 400}}"
+    outbound:
+      code: "{{response.code}}"
+      headers:
+        content-type: ["application/json"]
+      transformationOutTemplate: |
+        {
+          "status": "ERROR",
+          "info": "{{response.body}}"
+        }

@@ -1,0 +1,244 @@
+#
+# COPYRIGHT Ericsson 2023
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+global:
+  createDB: true
+  registry:
+    imagePullPolicy: IfNotPresent
+    url: armdocker.rnd.ericsson.se
+  nodeSelector: {}
+  pullSecret: eric-adp-example-secret
+
+  security:
+    tls:
+     enabled: false
+
+  hosts:
+    iam: "iam.ericsson.com"
+  iam:
+    clientId: "esoa"
+    adminSecret: eric-sec-access-mgmt-creds
+    userKey: kcadminid
+    passwordKey: kcpasswd
+    cacert:
+      secretName: iam-cacert-secret
+      key: tls.crt
+      filePath: iam/ca.crt
+  db:
+    connection:
+      max-lifetime:
+  internalIPFamily:
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+annotations: {}
+
+labels: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  eric-esoa-rest-service:
+    requests:
+      memory: "1000M"
+      cpu: "100m"
+      ephemeral-storage:
+    limits:
+      memory: "1000M"
+      cpu: "1000m"
+      ephemeral-storage:
+  pgInitContainer:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+      ephemeral-storage:
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+      ephemeral-storage:
+
+certificate:
+  truststore:
+    secret:
+      name: "eric-esoa-rest-service-truststore-secret"
+      field: "server.p12"
+  keystore:
+    secret:
+      name: "eric-esoa-rest-service-keystore-secret"
+      field: "client.p12"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+topologySpreadConstraints: [ ]
+
+affinity:
+  podAntiAffinity: "soft"
+  topologyKey: "kubernetes.io/hostname"
+
+imageCredentials:
+  repoPath:
+  mainImage:
+    repoPath: # overrides repoPath from eric-product-info.yaml
+    registry:
+      url:
+
+prometheus:
+  path: /actuator/prometheus
+  scrape: true
+# port: Needed for prometheus annotations in the eric-esoa-so-library-chart
+port:
+    http: 8080
+
+server:
+  port:
+    http: 8080
+    https: 8443
+  max-http-header-size: 15KB
+
+service:
+  port:
+    http: 80
+    https: 443
+
+probes:
+  eric-esoa-rest-service:
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 12
+    readinessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 5
+      timeoutSeconds: 2
+      failureThreshold: 3
+      successThreshold: 1
+
+logging:
+  format:
+    json: false
+
+jvm:
+  heap:
+    min: "512m"
+    max: "750m"
+
+terminationGracePeriodSeconds: 30 # default
+
+podPriority:
+  eric-esoa-rest-service:
+    priorityClassName: ""
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 25%
+    maxSurge: 25%
+
+subsystem:
+  host: "eric-esoa-subsystem-management"
+  cache:
+    accessExpiry: 30
+
+database:
+  host: eric-esoa-dr-database-pg
+  port: 5432
+  dbName: rsdb
+  schemaName: rest_service
+  secret: eric-esoa-dr-database-pg-secret
+  userkey: custom-user
+  passwdkey: custom-pwd
+  dbaUserkey: super-user
+  dbaPasswdkey: super-pwd
+  sslMode: disable
+  vendor: postgresql
+  #Secrets for edb configuration
+  serverCertSecret: edb-server-secret
+  clientCertSecret: edb-client-secret
+
+httpClient:
+  maxResponseSize: 100MB
+  maxResponseSizeKB: 100000
+
+security:
+  config:
+    mountPath: /var/dr/config/security/
+  keystore:
+    keyStoreSecretName: eric-esoa-rest-service-server-cert
+    tlsCertDirectory: /var/run/secrets/eric-esoa-rest-service-server-cert/
+    tlsCertFile: tls.crt
+    tlsKeyFile: tls.key
+  truststore:
+    path: ${java.io.tmpdir}/truststore.jks
+    caCertDirectory: /var/run/secrets/
+    certificates:
+      - secretName: eric-sec-sip-tls-trusted-root-cert
+        fileName: ca.crt
+      - secretName: eric-bos-esoa-common-client-ca-secret
+        fileName: ca.crt
+      - secretName: eric-pm-server-ca
+        fileName: ca.crt
+  renewCertRetry:
+    delay: 10000
+    times: 6
+
+portal:
+  proxyValue: eric-esoa-rest-service

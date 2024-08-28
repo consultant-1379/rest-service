@@ -1,0 +1,4 @@
+{
+  "status": "ERROR",
+  "info": "globalErrorHandler: {id=1, name=myName, text=\"value\", map={prop1=1, prop2=prop2Value, prop3=\"prop3Value\"}, list=[value1, \"value2\"]}"
+}

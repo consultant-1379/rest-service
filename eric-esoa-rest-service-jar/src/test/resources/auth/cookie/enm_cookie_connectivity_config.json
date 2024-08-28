@@ -1,0 +1,22 @@
+{
+  "name": "enm",
+  "url": "http://localhost:8081",
+  "subsystemType": {
+    "id": 1,
+    "type": "REST",
+    "category": "Primary"
+  },
+  "connectionProperties": [{
+    "ssl.verify": false,
+    "auth.url": "/login?IDToken1=administrator&IDToken2=letmein",
+    "auth.method": "POST",
+    "auth.headers": "{\"Content-Type\": [\"application/x-www-form-urlencoded\"], \"accept\": [\"*/*\"]}",
+    "auth.body": null,
+    "auth.type": "Cookie",
+    "auth.expireSeconds": "5",
+    "auth.key": "enm_token",
+    "auth.tokenRef": "iPlanetDirectoryPro"
+  }],
+  "vendor": "Ericsson",
+  "subsystemTypeId": 1
+}

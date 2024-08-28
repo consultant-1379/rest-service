@@ -1,0 +1,15 @@
+name: "resource_configuration_1"
+description: "invalid schema - retry handler missing mandatory policy"
+globalRequestHeaders:
+  content-type: [application/json]
+resources:
+  datasync:
+    path: '/oss-core-ws/rest/osl-adv/datasync/process'
+    methods:
+      post:
+        inbound:
+          headers:
+            content-type: ["application/json"]
+        outbound:
+        retryHandlers:
+          - retryCondition: "{{response.code == 400}}"

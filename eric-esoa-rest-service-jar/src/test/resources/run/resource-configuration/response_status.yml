@@ -1,0 +1,12 @@
+name: EXTERNAL_SYSTEM
+globalRequestHeaders:
+  content-type: [application/json]
+resources:
+  resource1:
+    path: '/path/to/resource1/subresource'
+    methods:
+      get:
+        inbound:
+          queryParams: ~
+        outbound:
+          code: %CODE%

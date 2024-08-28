@@ -1,0 +1,14 @@
+name: EXTERNAL_SYSTEM
+globalRequestHeaders:
+  content-type: [application/json]
+globalResponseHeaders:
+  content-type: [application/json]
+resources:
+  resource1:
+    path: '/path/to/resource1/subresource'
+    methods:
+      post:
+        inbound:
+          transformationInTemplate: %TRANSFORMATION_IN_TEMPLATE%
+        outbound:
+          transformationOutTemplate: ~

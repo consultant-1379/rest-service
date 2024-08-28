@@ -1,0 +1,16 @@
+{
+  "name": "ecm",
+  "url": "http://localhost:8081",
+  "connectionProperties": [{
+    "ssl.verify": false,
+    "auth.url": "/ecm_service/tokens",
+    "auth.username": "ecmadmin",
+    "auth.password": "letmein",
+    "auth.method": "POST",
+    "auth.headers": "{\"Content-Type\": [\"application/json\"], \"tenantId\": [\"ECM\"], \"accept\": [\"*/*\"]}",
+    "auth.body": null,
+    "auth.type": "BasicAuthToken",
+    "auth.key": "ecm_token",
+    "auth.tokenRef": ".status.credentials"
+  }]
+}

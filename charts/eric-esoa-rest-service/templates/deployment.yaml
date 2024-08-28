@@ -1,0 +1,205 @@
+#
+# COPYRIGHT Ericsson 2023
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eric-esoa-rest-service.name" . }}
+  labels:
+  {{- include "eric-esoa-rest-service.labels" . | nindent 4 }}
+  annotations:
+  {{- include "eric-esoa-rest-service.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.updateStrategy.type }}
+    {{- if and (eq .Values.updateStrategy.type "RollingUpdate") .Values.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+{{ toYaml .Values.updateStrategy.rollingUpdate | trim | indent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      annotations:
+        {{- include "eric-esoa-rest-service.annotations" . | nindent 8 }}
+      labels:
+        {{- include "eric-esoa-rest-service.labels" .| nindent 8}}
+    spec:
+      {{ with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{ toYaml . | nindent 6 }}
+      {{ end }}
+      {{- if index .Values.podPriority "eric-esoa-rest-service" "priorityClassName" }}
+      priorityClassName: {{ index .Values.podPriority "eric-esoa-rest-service" "priorityClassName" | quote }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- if  .Values.imageCredentials.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.imageCredentials.pullSecret | quote }}
+      {{- else if .Values.global.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.pullSecret | quote }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+      {{- include "eric-esoa-rest-service.pod-antiaffinity-type" . | nindent 10 }}
+      serviceAccountName: {{ template "eric-esoa-rest-service.name" . }}-sa
+      {{- if or ( .Values.global.createDB ) (eq ( include "eric-esoa-so-library-chart.value-db-vendor" . ) "edb") }}
+      securityContext:
+        fsGroup: {{ include "eric-esoa-rest-service.fsGroup" . }}
+      initContainers:
+      {{- end }}
+      {{- if eq ( include "eric-esoa-so-library-chart.value-db-vendor" . ) "edb" -}}
+      {{- include "eric-esoa-so-library-chart.edb-driver-init-container" . | indent 8 }}
+          resources:
+          {{- include "eric-esoa-rest-service.resourcesHelper" (dict "Values" .Values "resourceName" "eric-esoa-rest-service") | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            privileged: false
+            capabilities:
+              drop:
+                - ALL
+      {{- end }}
+      {{- if .Values.global.createDB -}}
+      {{- include "eric-esoa-rest-service.create-database-init-container" . | indent 8 }}
+          resources:
+          {{- include "eric-esoa-rest-service.resourcesHelper" (dict "Values" .Values "resourceName" "eric-esoa-rest-service") | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 235765
+            privileged: false
+            capabilities:
+              drop:
+                - ALL
+      {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- include "eric-esoa-so-library-chart.edb-driver-volume" . | indent 8 }}
+      {{- include "eric-esoa-so-library-chart.edb-server-cert-volume" . | indent 8}}
+      {{- if eq "true" ( include "eric-esoa-so-library-chart.is-it-mtls" . ) -}}
+      {{- include "eric-esoa-so-library-chart.edb-client-cert-volume" . | nindent 8 }}
+      {{- include "eric-esoa-rest-service.pg-dba-client-cert-volume" . | nindent 8 }}
+      {{- end }}
+      {{- include "eric-esoa-so-library-chart.sip-tls-volumes.v1" .| indent 8 }}
+      containers:
+        - image: {{ template "eric-esoa-rest-service.imagePath" (dict "imageId" "mainImage" "values" .Values "files" .Files) }}
+          imagePullPolicy: {{ .Values.global.registry.imagePullPolicy | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            privileged: false
+            runAsNonRoot: true
+            runAsUser: 140021
+            runAsGroup: 140021
+            capabilities:
+              drop:
+                - ALL
+          name: {{ .Chart.Name }}
+          ports:
+           {{- if eq (include "eric-esoa-so-library-chart.global-security-tls-enabled" .) "true" }}
+            - name: https
+              containerPort: {{ .Values.server.port.https }}
+           {{- else }}
+            - name: http
+              containerPort: {{ .Values.server.port.http }}
+           {{- end }}
+          env:
+            {{- include "eric-esoa-so-library-chart.db-env-variables" . | nindent 12 }}
+            - name: SERVICE_ID
+              value: {{ .Chart.Name }}
+            - name: CONNECTED_SYSTEM_URL
+            {{- if eq (include "eric-esoa-so-library-chart.global-security-tls-enabled" .) "true" }}
+              value: {{ printf "https://%s" .Values.subsystem.host | quote }}
+            {{- else }}
+              value: {{ printf "http://%s" .Values.subsystem.host | quote }}
+            {{- end }}
+            - name: CONNECTED_SYSTEM_CACHE_ACCESS_EXPIRY
+              value: {{ .Values.subsystem.cache.accessExpiry | quote}}
+            - name: TRUSTSTORE_SECRET_NAME_PREFIX
+              value: {{ .Values.certificate.truststore.secret.name | quote }}
+            - name: TRUSTSTORE_SECRET_DATA_FIELD_KEY
+              value: {{ .Values.certificate.truststore.secret.field | quote }}
+            - name: KEYSTORE_SECRET_NAME_PREFIX
+              value: {{ .Values.certificate.keystore.secret.name | quote }}
+            - name: KEYSTORE_SECRET_DATA_FIELD_KEY
+              value: {{ .Values.certificate.keystore.secret.field | quote }}
+            - name: SPRING_CONFIG_CUSTOM_LOCATIONS
+              value: optional:{{.Values.security.config.mountPath}}truststore.yaml
+            - name: WEB_CLIENT_IN_MEMORY_SIZE
+              value: {{ .Values.httpClient.maxResponseSize | quote }}
+            - name: WEB_CLIENT_IN_MEMORY_SIZE_KB
+              value: {{ .Values.httpClient.maxResponseSizeKB | quote }}
+            - name: SERVER_MAX_HTTP_HEADER_SIZE
+              value: {{ index .Values.server "max-http-header-size" }}
+            - name: GRACEFUL_SHUTDOWN_TIMEOUT
+              value: {{ .Values.terminationGracePeriodSeconds | default "30" }}s
+            - name: JAVA_OPTS
+              value: "-Xms{{ .Values.jvm.heap.min }} -Xmx{{ .Values.jvm.heap.max }}"
+            {{- include "eric-esoa-so-library-chart.sip-tls-env-variables.v1" .| indent 12 }}
+          resources: {{- include "eric-esoa-rest-service.resourcesHelper" (dict "Values" .Values "resourceName" "eric-esoa-rest-service") | nindent 12 }}
+          livenessProbe:
+            {{- if eq (include "eric-esoa-so-library-chart.global-security-tls-enabled" .) "true" }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl --cacert {{ .Values.security.truststore.caCertDirectory }}eric-sec-sip-tls-trusted-root-cert/ca.crt --cert {{ .Values.security.keystore.tlsCertDirectory }}tls.crt --key {{ .Values.security.keystore.tlsCertDirectory }}tls.key "https://localhost:{{ .Values.server.port.https }}/actuator/health/liveness"
+            {{- else }}
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.server.port.http }}
+            {{- end }}
+            initialDelaySeconds: {{ index .Values.probes "eric-esoa-rest-service" "livenessProbe" "initialDelaySeconds" }}
+            periodSeconds: {{ index .Values.probes "eric-esoa-rest-service" "livenessProbe" "periodSeconds" }}
+            timeoutSeconds: {{ index .Values.probes "eric-esoa-rest-service" "livenessProbe" "timeoutSeconds" }}
+            failureThreshold: {{ index .Values.probes  "eric-esoa-rest-service" "livenessProbe" "failureThreshold" }}
+          readinessProbe:
+            {{- if eq (include "eric-esoa-so-library-chart.global-security-tls-enabled" .) "true" }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl --cacert {{ .Values.security.truststore.caCertDirectory }}eric-sec-sip-tls-trusted-root-cert/ca.crt --cert {{ .Values.security.keystore.tlsCertDirectory  }}tls.crt --key {{ .Values.security.keystore.tlsCertDirectory }}tls.key "https://localhost:{{ .Values.server.port.https }}/actuator/health/readiness"
+            {{- else }}
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.server.port.http }}
+            {{- end }}
+            initialDelaySeconds: {{ index .Values.probes "eric-esoa-rest-service" "readinessProbe" "initialDelaySeconds" }}
+            periodSeconds: {{ index .Values.probes "eric-esoa-rest-service" "readinessProbe" "periodSeconds" }}
+            timeoutSeconds: {{ index .Values.probes "eric-esoa-rest-service" "readinessProbe" "timeoutSeconds" }}
+            failureThreshold: {{ index .Values.probes "eric-esoa-rest-service" "readinessProbe" "failureThreshold" }}
+            successThreshold: {{ index .Values.probes "eric-esoa-rest-service" "readinessProbe" "successThreshold" }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+              readOnly: false
+          {{- include "eric-esoa-so-library-chart.edb-server-cert-volume-mount" . | indent 12 }}
+          {{- include "eric-esoa-so-library-chart.edb-driver-volume-mount" . | nindent 12 }}
+          {{- if eq "true" ( include "eric-esoa-so-library-chart.is-it-mtls" .) -}}
+          {{- include "eric-esoa-so-library-chart.edb-client-cert-volume-mount" . | nindent 12 }}
+          {{- end }}
+          {{- include "eric-esoa-so-library-chart.sip-tls-volume-mounts.v1" .| indent 12 }}
+  {{- include "eric-esoa-rest-service.nodeSelector" .| indent 6 }}

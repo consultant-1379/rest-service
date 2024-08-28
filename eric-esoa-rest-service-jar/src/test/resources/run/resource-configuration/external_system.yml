@@ -1,0 +1,84 @@
+name: EXTERNAL_SYSTEM
+globalRequestHeaders:
+  content-type: [application/json]
+globalResponseHeaders:
+  content-type: [application/json]
+resources:
+  resource1:
+    path: '/path/to/resource1'
+    methods:
+      get:
+        inbound:
+          headers:
+            content-type: [application/json]
+          transformationInTemplate:  ~
+          queryParams: ?$filter=isVimAssigned=true 'and' projectName={{inputs.projectName}}
+        outbound:
+          code: 200
+          headers:
+            content-type: [application/json]
+          transformationOutTemplate: |
+            {
+              "objectName": "{{response.body.name}}"
+            }
+        errorHandlers:
+          - errorCondition: "{{response.code == 200 and response.body.data == null}}"
+            outbound:
+              code: 404
+              headers:
+                content-type: [application/json]
+              transformationOutTemplate: ~
+      post:
+        inbound:
+          headers:
+            content-type: [application/json]
+          transformationInTemplate:  ~
+          queryParams: ~
+        outbound:
+          code: "200"
+          headers:
+            content-type: [application/json]
+          transformationOutTemplate: |
+            {
+              "status": "SUCCESS",
+              "info": "Object Processed"
+            }
+        errorHandlers:
+          - errorCondition: "{{response.code == 200 and response.body.data == null}}"
+            outbound:
+              code: "404"
+              headers:
+                content-type: [application/json]
+              transformationOutTemplate: ~
+  resource2:
+    path: '/path/to/resource2/{{inputs.object}}'
+    methods:
+      get:
+        inbound:
+          headers:
+            content-type: [application/json]
+          transformationInTemplate:  ~
+          queryParams: ~
+        outbound:
+          code: "200"
+          headers:
+            content-type: [application/json]
+          transformationOutTemplate: ~
+        errorHandlers:
+          - errorCondition: "{{response.code == 200 and response.body.data == null}}"
+            outbound:
+              code: "404"
+              headers:
+                content-type: [application/json]
+              transformationOutTemplate: ~
+globalErrorHandlers:
+  - errorCondition: "{{response.code >= 400}}"
+    outbound:
+      code: "{{response.code}}"
+      headers:
+        content-type: [application/json]
+      transformationOutTemplate: |
+        {
+          "status": "ERROR",
+          "info": "{{response.body}}"
+        }

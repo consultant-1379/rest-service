@@ -1,0 +1,75 @@
+[
+    {
+        "id": "\\d+",
+        "name": "CTS",
+        "description": "test_resource_configuration",
+        "createdAt": ".+",
+        "modifiedAt": ".+",
+        "globalRequestHeaders": {
+            "content-type": [
+                "application/json"
+            ],
+            "Authorization": [
+                "webAuthenticationToken {{cts_token1}}"
+            ]
+        },
+        "globalResponseHeaders": null,
+        "resources": {
+            "datasync": {
+                "path": "/oss-core-ws/rest/osl-adv/datasync/process",
+                "methods": {
+                    "post": {
+                        "inbound": {
+                            "headers": {
+                                "content-type": [
+                                    "application/json"
+                                ]
+                            },
+                            "transformationInTemplate": null,
+                            "queryParams": null,
+                            "encodeUrl": true
+                        },
+                        "outbound": {
+                            "transformationOutTemplate": "{\n  \"status\": \"SUCCESS\",\n  \"info\": \"Object Processed\"\n}\n",
+                            "headers": null,
+                            "code": "200"
+                        },
+                        "errorHandlers": null,
+                        "retryHandlers": null
+                    }
+                }
+            },
+            "getobject": {
+                "path": "/oss-core-ws/rest/{{inputs.object}}",
+                "methods": {
+                    "get": {
+                        "inbound": {
+                            "headers": null,
+                            "transformationInTemplate": null,
+                            "queryParams": null,
+                            "encodeUrl": true
+                        },
+                        "outbound": null,
+                        "errorHandlers": null,
+                        "retryHandlers": null
+                    }
+                }
+            }
+        },
+        "globalErrorHandlers": [
+            {
+                "errorCondition": "{{response.code >= 400}}",
+                "outbound": {
+                    "transformationOutTemplate": "{\n  \"status\": \"ERROR\",\n  \"info\": \"{{response.body}}\"\n}\n",
+                    "headers": {
+                        "content-type": [
+                            "application/json"
+                        ]
+                    },
+                    "code": "{{response.code}}"
+                }
+            }
+        ],
+        "globalRetryHandlers": null
+    }
+]

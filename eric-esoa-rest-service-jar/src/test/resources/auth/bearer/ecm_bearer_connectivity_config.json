@@ -1,0 +1,15 @@
+{
+  "name": "ecm",
+  "url": "http://localhost:8081",
+  "connectionProperties": [{
+    "ssl.verify": false,
+    "auth.url": "/ecm_service/oauth2/access_token",
+    "auth.method": "POST",
+    "auth.headers": "{\"Content-Type\":[\"application/json\"],\"authorization\":[\"Basic RUNNL2VjbWFkbWluOmxldG1laW4\"],\"accept\":[\"*/*\"]}",
+    "auth.body": "{\"grant_type\":\"client_credentials\"}",
+    "auth.type": "Bearer",
+    "auth.expireSeconds": "5",
+    "auth.key": "ecm_token",
+    "auth.tokenRef": ".status.credentials"
+  }]
+}

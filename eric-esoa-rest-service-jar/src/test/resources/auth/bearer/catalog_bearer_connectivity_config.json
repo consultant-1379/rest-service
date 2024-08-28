@@ -1,0 +1,15 @@
+{
+    "name": "catalog",
+    "url": "http://localhost:8081",
+    "connectionProperties": [{
+        "ssl.verify": false,
+        "auth.url": "/token",
+        "auth.method": "POST",
+        "auth.headers": "{\"Content-Type\": [\"application/json\"], \"accept\": [\"*/*\"]}",
+        "auth.body": "{\"client_id\":\"Ericsson\",\"client_secret\":\"P4sS.w0rd\",\"grant_type\":\"complete\"}",
+        "auth.type": "Bearer",
+        "auth.expireSeconds": "5",
+        "auth.key": "so_token",
+        "auth.tokenRef": ".access_token"
+    }]
+}

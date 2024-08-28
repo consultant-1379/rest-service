@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "name": "SO",
+        "subsystemType": {
+            "id": 1,
+            "type": "REST",
+            "category": "Primary"
+        },
+        "url": "http://localhost:8081",
+        "connectionProperties": [
+            {
+                "username": "user",
+                "password": "123",
+                "ssl.verify": false,
+                "ssl.trustStoreSecretName": "eric-esoa-rest-service-truststore-secret-subsystem",
+                "ssl.trustStoreSecretPassword": "password",
+                "ssl.keyStoreSecretName": "eric-esoa-rest-service-keystore-secret-subsystem",
+                "ssl.keyStoreSecretPassword": "password",
+                "auth.username": "eo-user",
+                "auth.password": "abcde@12345",
+                "auth.type": "BasicAuth",
+                "auth.url": "/auth/v1",
+                "auth.method": "POST",
+                "auth.headers": "{\"content-type\":[\"application/json\"],\"accept\":[\"*/*\"]}",
+                "auth.body": "",
+                "auth.expireSeconds": "5",
+                "auth.key": "auth_token",
+                "auth.tokenRef": "",
+                "client.connectTimeoutSeconds": "1",
+                "client.readTimeoutSeconds": "1",
+                "client.writeTimeoutSeconds": "1"
+            }
+        ],
+        "vendor": "Ericsson",
+        "subsystemTypeId": 1
+    }
+]

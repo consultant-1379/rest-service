@@ -1,0 +1,59 @@
+#
+# COPYRIGHT Ericsson 2023
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+version: '3'
+services:
+  rs:
+    container_name: rs
+    image: eric-esoa-rest-service:latest
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_PORT=5432
+      - DATABASE_DBNAME=rsdb
+    networks:
+    - rs_net
+    ports:
+    - "8080:8080"
+    depends_on:
+    - postgres
+    links:
+    - postgres
+  postgres:
+    image: armdocker.rnd.ericsson.se/proj-document-database-pg/data/eric-data-document-database-pg:1.1.0-1
+    container_name: postgres
+    command: postgres -c max_prepared_transactions=100
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rsdb
+      POSTGRES_INITDB_ARGS: ""
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DEFAULT_PWD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvol:/var/lib/postgresql/data
+    networks:
+    - rs_net
+
+networks:
+  rs_net:
+     driver: bridge
+volumes:
+  pgvol:

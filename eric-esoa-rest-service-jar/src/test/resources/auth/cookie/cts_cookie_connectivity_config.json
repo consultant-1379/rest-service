@@ -1,0 +1,15 @@
+{
+  "name": "cts",
+  "url": "http://localhost:8081",
+  "connectionProperties": [{
+    "ssl.verify": false,
+    "auth.url": "/auth/v1/login",
+    "auth.method": "POST",
+    "auth.headers": "{\"X-login\":[\"so-user\"],\"X-password\":[\"letmein\"],\"Content-Type\":[\"application/json\"],\"accept\":[\"*/*\"]}",
+    "auth.body": null,
+    "auth.type": "Cookie",
+    "auth.expireSeconds": "5",
+    "auth.key": "so_token",
+    "auth.tokenRef": "JSESSIONID"
+  }]
+}

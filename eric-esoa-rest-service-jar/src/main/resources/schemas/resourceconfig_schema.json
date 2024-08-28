@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["name", "globalRequestHeaders", "resources"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "globalRequestHeaders": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.*$": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "globalResponseHeaders": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.*$": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "methods"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "methods": {
+              "type": "object",
+              "patternProperties": {
+                "^.*$": {
+                  "additionalProperties": false,
+                  "required": [
+                    "inbound",
+                    "outbound"
+                  ],
+                  "properties": {
+                    "inbound": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "headers": {
+                          "type": ["object", "null"],
+                          "additionalProperties": false,
+                          "patternProperties": {
+                            "^.*$": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "transformationInTemplate": {
+                          "type": ["null","string"]
+                        },
+                        "transformationInTemplateFile": {
+                          "type": ["null","string"]
+                        },
+                        "queryParams": {
+                          "type": ["null","string"]
+                        },
+                        "encodeUrl": {
+                          "type": ["null","boolean", "string"]
+                        }
+                      }
+                    },
+                    "outbound": {
+                      "$ref": "#/$defs/outbound"
+                    },
+                    "errorHandlers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "errorCondition"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "errorCondition": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "outbound": {
+                            "$ref": "#/$defs/outbound"
+                          }
+                        }
+                      }
+                    },
+                    "retryHandlers": {
+                      "type": ["array", "null"],
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "#/$defs/retryHandler"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "globalErrorHandlers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["errorCondition"],
+        "properties": {
+          "errorCondition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outbound": {
+            "$ref": "#/$defs/outbound"
+          }
+        }
+      }
+    },
+    "globalRetryHandlers": {
+      "type": ["array", "null"],
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/retryHandler"
+      }
+    }
+  },
+  "$defs": {
+    "outbound": {
+      "type": ["object", "null"],
+      "properties": {
+        "headers": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "patternProperties": {
+            "^.*$": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "transformationOutTemplate": {
+          "type": ["null","string"]
+        },
+        "transformationOutTemplateFile": {
+          "type": ["null","string"]
+        },
+        "jq": {
+          "type": ["null","string"]
+        },
+        "table": {
+          "type": ["null","object"],
+          "properties": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": ["null", "string", "integer"]
+        }
+      }
+    },
+    "retryHandler": {
+      "type": "object",
+      "required": [
+        "retryCondition",
+        "retryPolicy"
+      ],
+      "properties": {
+        "retryCondition": {
+          "type": "string"
+        },
+        "retryPolicy": {
+          "type": "object",
+          "required": ["maxRetries", "backOffSeconds"],
+          "properties": {
+            "backOffSeconds": {
+              "type": "number"
+            },
+            "maxRetries": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}

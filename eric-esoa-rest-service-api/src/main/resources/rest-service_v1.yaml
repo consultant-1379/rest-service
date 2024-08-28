@@ -1,0 +1,543 @@
+#
+# COPYRIGHT Ericsson 2023
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+openapi: 3.0.3
+info:
+  title: Rest Service API
+  description: |
+    Operations associated with onboarding and managing Resource Configurations. 
+  
+    The Resource Configuration file provides a mechanism to configure REST requests and responses towards an external system.
+    
+    It abstracts away the complexities of the REST call configuration from services.
+    
+    Using the /run operation a service can execute REST calls towards an external system using the on-boarded Resource Configurations.
+  contact:
+    name: Ericsson
+  version: 1.0.0
+servers:
+  - url: '/'
+tags:
+  - name: Resource Configurations
+  - name: Run
+paths:
+  /rest-service/v1/resource-configurations:
+    get:
+      tags:
+        - Resource Configurations
+      summary: Get Resource Configurations.
+      description: |
+        Returns a list of all the Resource Configurations.
+      operationId: getResourceConfigurations
+      responses:
+        200:
+          description: Resource Configurations successfully fetched
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceConfigurationDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    post:
+      tags:
+        - Resource Configurations
+      summary: Upload Resource Configuration
+      description: |
+        Uploads a yaml file with a new Resource Configuration.
+      operationId: uploadResourceConfiguration
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Resource Configuration yaml File
+        required: true
+      responses:
+        201:
+          description: Resource Configuration successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceConfigurationDto'
+              examples:
+                example_configuration:
+                  $ref: '#/components/examples/ResourceConfigurationDtoExample'
+        400:
+          description: Resource Configuration contains badly formatted configuration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        409:
+          description: Resource Configuration with given name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+  /rest-service/v1/resource-configurations/{resourceConfigurationName}:
+    get:
+      tags:
+        - Resource Configurations
+      summary: Get Resource Configuration
+      description: |
+        Returns information about a given Resource Configuration.
+      operationId: getResourceConfiguration
+      parameters:
+        - name: resourceConfigurationName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Resource Configuration information successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceConfigurationDto'
+              examples:
+                example_configuration:
+                  $ref: '#/components/examples/ResourceConfigurationDtoExample'
+        404:
+          description: Resource Configuration with given name does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    delete:
+      tags:
+        - Resource Configurations
+      summary: Delete Resource Configuration
+      description: |
+        Deletes a given Resource Configuration.
+      operationId: deleteResourceConfiguration
+      parameters:
+        - name: resourceConfigurationName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Resource Configuration deleted
+        404:
+          description: Resource Configuration with given name does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    put:
+      tags:
+        - Resource Configurations
+      summary: Update Resource Configuration
+      description: |
+        Uploads a yaml file with an updated Resource Configuration, replacing the existing Resource Configuration.
+      operationId: updateResourceConfiguration
+      parameters:
+        - name: resourceConfigurationName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Resource Configuration yaml File
+        required: true
+      responses:
+        201:
+          description: Resource Configuration successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceConfigurationDto'
+              examples:
+                example_configuration:
+                  $ref: '#/components/examples/ResourceConfigurationDtoExample'
+        400:
+          description: Resource Configuration contains badly formatted configuration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        404:
+          description: Resource Configuration with given name does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+  /rest-service/v1/resource-configurations/{resourceConfigurationName}/files:
+    get:
+      tags:
+        - Resource Configurations
+      summary: Download Resource Configuration
+      description: |
+        Downloads a yaml file with the Resource Configuration.
+      operationId: downloadResourceConfiguration
+      parameters:
+        - name: resourceConfigurationName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Resource Configuration successfully downloaded
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        404:
+          description: Resource Configuration with given name does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+  /rest-service/v1/run/{subsystemName}/{resourceConfigurationName}/{resource}:
+    post:
+      tags:
+        - Run
+      summary: Execute API call
+      description: |
+        Executes an API call towards an external system.
+        
+        The Rest Service will retrieve the external system's connection properties from Subsystem Manager using the subsystemName path segment from the URL.
+        
+        The correct Resource Configuration will be retrieved using the resourceConfigurationName path segment from the URL. And the resource in the Resource Configuration will be identified by the resource path segment in the URL.
+        
+        Using the Resource Configuration and the connected system properties from Subsystem Manager a REST call will be executed towards the external system and the response returned.
+        
+        Based on the Resource Configuration the request and response may be transformed.
+      operationId: run
+      parameters:
+        - name: subsystemName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceConfigurationName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequestDto'
+            examples:
+              example_configuration:
+                $ref: '#/components/examples/RunRequestDtoExample'
+        required: true
+      responses:
+        200:
+          description: run API call successful
+          content:
+            '*/*':
+              schema:
+                type: object
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+components:
+  schemas:
+    #################################################################################
+    #                              Error response Schema                            #
+    #################################################################################
+    ErrorResponseDto:
+      type: object
+      required:
+        - errorMessage
+        - errorCode
+      properties:
+        errorMessage:
+          type: string
+          description: User Message
+          readOnly: true
+        errorCode:
+          type: string
+          description: Error Code.
+          readOnly: true
+    #################################################################################
+    #                         Rescource Configuration Schema                        #
+    #################################################################################
+    ResourceConfigurationDto:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - globalRequestHeaders
+        - resources
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          description: Resource Configuration name
+        description:
+          type: string
+          description: Resource Configuration description
+        createdAt:
+          type: string
+          description: Resource Configuration creation date
+          readOnly: true
+        modifiedAt:
+          type: string
+          description: Resource Configuration last modification date
+          readOnly: true
+        globalRequestHeaders:
+          $ref: '#/components/schemas/HeaderMultiValueMapDto'
+        globalResponseHeaders:
+          $ref: '#/components/schemas/HeaderMultiValueMapDto'
+        resources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ResourceDto'
+        globalErrorHandlers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorHandlerDto'
+        globalRetryHandlers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetryHandlerDto'
+    ResourceDto:
+      type: object
+      required:
+        - methods
+        - path
+      properties:
+        #        name:
+        #          type: string
+        path:
+          type: string
+        methods:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ResourceMethodPropertyDto'
+    ResourceMethodPropertyDto:
+      type: object
+      required:
+        - inbound
+        - outbound
+      properties:
+        #        method:
+        #          type: string
+        inbound:
+          $ref: '#/components/schemas/InboundPropertyDto'
+        outbound:
+          $ref: '#/components/schemas/OutboundPropertyDto'
+        errorHandlers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorHandlerDto'
+        retryHandlers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetryHandlerDto'
+    ErrorHandlerDto:
+      type: object
+      required:
+        - errorCondition
+      properties:
+        errorCondition:
+          type: string
+        outbound:
+          $ref: '#/components/schemas/OutboundPropertyDto'
+    InboundPropertyDto:
+      type: object
+      properties:
+        headers:
+          $ref: '#/components/schemas/HeaderMultiValueMapDto'
+        transformationInTemplate:
+          type: string
+        queryParams:
+          type: string
+        encodeUrl:
+          type: boolean
+          default: true
+    OutboundPropertyDto:
+      type: object
+      properties:
+        transformationOutTemplate:
+          type: string
+        headers:
+          $ref: '#/components/schemas/HeaderMultiValueMapDto'
+        code:
+          type: string
+    HeaderMultiValueMapDto:
+      type: object
+      description: used to store header values
+      additionalProperties:
+        type: array
+        items:
+          type: string
+    RetryHandlerDto:
+      type: object
+      required:
+        - retryCondition
+      properties:
+        retryCondition:
+          type: string
+        retryPolicy:
+          $ref: '#/components/schemas/RetryPolicyDto'
+    RetryPolicyDto:
+      type: object
+      properties:
+        backOffSeconds:
+          type: double
+        maxRetries:
+          type: integer
+    #################################################################################
+    #                                   Run Schema                                  #
+    #################################################################################
+    RunRequestDto:
+      type: object
+      properties:
+        method:
+          pattern: '^([gG][eE][tT]|[pP][uU][tT]|[dD][eE][lL][eE][tT][eE]|[pP][oO][sS][tT]|[pP][aA][tT][cC][hH])$'
+          type: string
+        responseFormat:
+          pattern: '^([cC][sS][vV]|[jJ][sS][oO][nN]|[cC][uU][sS][tT][oO][mM][cC][sS][vV].*|[xX][mM][lL]|[oO][rR][iI][gG][iI][nN][aA][lL])$'
+          type: string
+          default: 'json'
+        body:
+          type: object
+        inputs:
+          type: object
+          additionalProperties:
+            type: object
+  examples:
+    ResourceConfigurationDtoExample:
+      value:
+        id: 123
+        name: myResourceConfig
+        description: Example Resource Configuration
+        createdAt: "2023-03-13 12:47:08.453"
+        modifiedAt: "2023-03-13 14:47:08.453"
+        globalRequestHeaders:
+          content-type: [application/json]
+        globalResponseHeaders:
+          content-type: [application/json]
+        globalRetryHandlers:
+          - retryCondition: "{{response.code == 500 && response.body == 'globalError1'}}"
+            retryPolicy:
+              backOffSeconds: 0.1
+              maxRetries: 1
+        resources:
+          resource1:
+            path: pathToResource1
+            methods:
+              get:
+                inbound:
+                  headers:
+                    content-type: [application/json]
+                  queryParams: ~
+                  transformationInTemplate: ~
+                outbound:
+                  transformationOutTemplate: ~
+                  headers:
+                    content-type: [application/json]
+                  code: 200
+                retryHandlers:
+                  - retryCondition: "{{response.code == 400 && response.body == 'error1'}}"
+                    retryPolicy:
+                      backOffSeconds: 0.1
+                      maxRetries: 1
+                errorHandlers:
+                  - errorCondition: ~
+                    outbound:
+                      transformationOutTemplate: ~
+                      headers:
+                        content-type: [application/json]
+                      code: ~
+        globalErrorHandlers:
+          - errorCondition: "{{response.code >= 400}}"
+            outbound:
+              transformationOutTemplate: ~
+              headers:
+                content-type: [application/json]
+              code: "{{response.code}}"
+
+    RunRequestDtoExample:
+      value:
+        method: GET
+        responseFormat: json
+        body: 
+          prop_1: value_1
+          prop_2: value_2
+        inputs:
+          id: 123

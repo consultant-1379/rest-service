@@ -1,0 +1,48 @@
+name: EXTERNAL_SYSTEM
+globalRequestHeaders:
+  content-type: [application/xml]
+globalResponseHeaders:
+  content-type: [application/ld+json]
+resources:
+  multi-method-resource:
+    path: '/path-to-multi-method-resource'
+    methods:
+      get:
+        inbound:
+          headers:
+            content-type: [application/json; charset=utf-8]
+          transformationInTemplate:  ~
+          queryParams: ?id={{inputs.id}}
+        outbound:
+          code: "{{inputs.code}}"
+          headers:
+            content-type: [application/json; charset=utf-8]
+          transformationOutTemplate: |
+            {"transformationOutTemplate_Name": "{{response.body.name}}"}
+      post:
+        inbound:
+          headers:
+            content-type: [application/json]
+          transformationInTemplate: |
+            {"transformationInTemplate_Name": "{{inputs.name}}"}
+        outbound:
+          code: "{{inputs.code}}"
+          headers:
+            content-type: [application/json; charset=utf-8]
+          transformationOutTemplate: |
+            {"transformationOutTemplate_Name": "{{response.body.name}}"}
+  single-method-resource:
+    path: '/path-to-single-method-resource'
+    methods:
+      get:
+        inbound:
+          headers:
+            content-type: [application/json; charset=utf-8]
+          transformationInTemplate:  ~
+          queryParams: ?id={{inputs.id}}
+        outbound:
+          code: "{{inputs.code}}"
+          headers:
+            content-type: [application/json; charset=utf-8]
+          transformationOutTemplate: |
+            {"transformationOutTemplate_Name": "{{response.body.name}}"}

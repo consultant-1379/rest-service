@@ -1,0 +1,45 @@
+name: CTS
+description: test_resource_configuration
+globalRequestHeaders:
+  content-type: [application/json]
+resources:
+  datasync:
+    path: '/oss-core-ws/rest/osl-adv/datasync/process'
+    methods:
+      post:
+        inbound:
+          headers:
+            content-type: [application/json]
+          transformationInTemplate:  ~
+        outbound:
+          code: 200
+          headers:
+            content-type: [application/json]
+          transformationOutTemplate: |
+            {
+              "status": "SUCCESS",
+              "info": "Object Processed"
+            }
+  getobject:
+    path: '/oss-core-ws/rest/{{inputs.object}}'
+    methods:
+      get:
+        inbound:
+          transformationInTemplate: ~
+        outbound:
+          code: 200
+          transformationOutTemplate: |
+            {
+              "objectName": "{{response.body.name}}"
+            }
+globalErrorHandlers:
+  - errorCondition: "{{response.code >= 400}}"
+    outbound:
+      code: "{{response.code}}"
+      headers:
+        content-type: ["application/json"]
+      transformationOutTemplate: |
+        {
+          "status": "ERROR",
+          "info": "{{response.body}}"
+        }
